@@ -35,13 +35,13 @@ void Fluxo(){
 
 			puts("Informe o Nome: ");
 			setbuf(stdin,NULL);
-			fgets(fluxo[qtdCad-1].nome,sizeof(struct CADASTRO),stdin);
+			gets(fluxo[qtdCad].nome);//,sizeof(struct CADASTRO),stdin);
 			setbuf(stdin,NULL);
 			puts("Informe o numero da Matricula: ");
-			fgets(fluxo[qtdCad-1].matricula,sizeof(struct CADASTRO),stdin);
+			gets(fluxo[qtdCad].matricula);//,sizeof(struct CADASTRO),stdin);
 			setbuf(stdin,NULL);
 			puts("Informe o equipamento/produto: ");
-			fgets(fluxo[qtdCad-1].codPro,sizeof(struct CADASTRO),stdin);
+			fgets(fluxo[qtdCad].codPro,sizeof(struct CADASTRO),stdin);
 
 
 
@@ -54,7 +54,7 @@ void Fluxo(){
 			getchar();
 			system("tput clear");
 		}
-	arq = fopen("teste.txt","at");
+	arq = fopen("teste.txt","wt");
 	fwrite(&qtdCad, sizeof(int),1,arq);
 	fwrite(fluxo, sizeof(struct CADASTRO),qtdCad,arq);
 	fclose(arq);
@@ -69,10 +69,72 @@ void ListarProdutos(){
 void Remover(){
 }
 void Pesquisar(){
+
+	char *substring;
+	char Pesquisa[100];
+	int pos = 0, regnum = 0;
+	char opc;
+
+	if ((arq = fopen("dadosFluxo.txt","rt")) == NULL) {
+
+		puts("Houve um erro ao abrir o arquivo.\n");
+		getchar();
+		exit(1);
+	}
+
+
+	puts("Leitura de pesquisa\n\n");
+	printf("Digite sua pesquisa: ");
+	setbuf(stdin,NULL);
+	scanf("%s", &Pesquisa);
+
+	while(!feof(arq))
+	{
+		if (fread(&qtdCad, sizeof(struct CADASTRO), 1, arq)==1){
+			substring = strstr(fluxo[qtdCad].nome ,Pesquisa);
+			regnum =  pos+1;
+			printf("\n\tNome: %s\n\tMatricula: %s\n\n",fluxo[qtdCad].nome,fluxo[qtdCad].matricula);
+
+			}else{
+				 substring = strstr(fluxo[qtdCad].matricula,Pesquisa);
+				 if (substring){
+					 regnum = pos+1;
+					 printf("\n\tNome: %s\n\tMatricula: %s\n\n",fluxo[qtdCad].nome, fluxo[qtdCad].matricula);
+
+					 }
+				}
+			pos++;
+	}
+	if (regnum==0){
+	puts("\n\t *** Cadastro nao localizado. ***");
+
+	}else{
+	fflush(stdin);
+	printf("Deseja altera o registro? (s/n) ");
+	scanf("%c", &opc);
+	getchar();
+		if (opc == 's')
+		{
+			printf("\nAtualizar Contato:\n\n");
+			printf("\tNome: ");
+			fgets(fluxo[qtdCad].matricula,sizeof(struct CADASTRO),stdin);
+			printf("Telefone: ");
+			fgets(fluxo[qtdCad].matricula,sizeof(struct CADASTRO),stdin);
+			printf("\n\n");
+			fseek(arq, sizeof(struct CADASTRO)*(regnum-1), SEEK_SET);
+			fwrite(&fluxo, sizeof(struct CADASTRO), 1, arq);
+			printf("\n\t*** Registro alterado com sucesso! ***\n\n");
+			getchar();
+			system("tput clear");
+		}
+	}
+	fclose(arq);
 }
+
+
 void Salvar(){
 	
-	arq = fopen("teste.txt","at");
+	arq = fopen("dadosFluxo.txt","wt");
 	fwrite(&qtdCad, sizeof(int),1,arq);
 	fwrite(fluxo, sizeof(struct CADASTRO),qtdCad,arq);
 	fclose(arq);
@@ -86,7 +148,7 @@ void Salvar(){
 }
 int main(){
 	int opcao = -1;
-	arq = fopen("teste.txt","rt");
+	arq = fopen("dadosFluxo.txt","rt");
 	if(arq == NULL){
 		printf("\n\t>>> Arquivo não pode ser aberto <<<\n\n\t     >>>Um novo será criado<<<\n\n Aperte ENTER para continuar." );
 		getchar();
